@@ -1,0 +1,47 @@
+---
+- name: create lvm partition using ansible playbook
+  hosts: all
+  tasks: 
+   
+   - name: creating partition
+     parted: 
+             device: /dev/sdb
+             number: 1
+             state: present
+             part_start: 1GiB
+             part_end: 3GiB
+
+   - name: set file system
+     filesystem: 
+             fstype: xfs
+             dev: /dev/vg1/sdb1
+             force: yes
+
+   - name: create volume group partition
+     lvg: 
+             vg: vg1
+             pvs: /dev/sdb1
+
+   - name: create lvm partition
+     lvol:     
+             vg: vg1
+             lv: sdb1
+             size: 512
+             resizefs: true
+             force: yes
+             state: present 
+
+   - name: creating directory
+     file:
+             path: /raju
+             mode: 777
+             state: directory
+
+     
+   - name: mount partition
+     mount: 
+             path: /raju
+             src: /dev/vg1/sdb1
+             fstype: xfs
+             state: mounted    
+             
